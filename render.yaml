@@ -11,9 +11,10 @@ services:
     name: velora
     runtime: node
     plan: free
-    # Migrations run in the build step so this works on Render's free plan
-    # (preDeployCommand requires a paid instance type).
-    buildCommand: npm install && npx prisma migrate deploy && npm run build
+    # Migrations + seed run in the build step so this works on Render's free plan
+    # (preDeployCommand and Shell access require a paid instance type).
+    # db:seed only populates an empty database; set FORCE_SEED=1 to reseed.
+    buildCommand: npm install && npx prisma migrate deploy && npm run db:seed && npm run build
     startCommand: npm run start
     healthCheckPath: /
     envVars:

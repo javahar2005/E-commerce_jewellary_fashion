@@ -11,6 +11,16 @@ const img = (id: string) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
 
 async function main() {
+  // Safe to run on every deploy: only seeds an empty database.
+  // Set FORCE_SEED=1 to wipe and reseed a populated one.
+  const existingUsers = await prisma.user.count();
+  if (existingUsers > 0 && process.env.FORCE_SEED !== "1") {
+    console.log(
+      `Database already has ${existingUsers} users — skipping seed. Set FORCE_SEED=1 to reseed.`,
+    );
+    return;
+  }
+
   console.log("Clearing existing data…");
   await prisma.review.deleteMany();
   await prisma.orderItem.deleteMany();
