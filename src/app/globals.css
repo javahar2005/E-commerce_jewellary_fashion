@@ -1,26 +1,243 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-ivory: #f7f4ef;
+  --color-beige: #efeae2;
+  --color-beige-deep: #e4ddd1;
+  --color-charcoal: #292824;
+  --color-stone: #77736b;
+  --color-sage: #7d8574;
+  --color-sage-deep: #5f6657;
+  --color-champagne: #b49a6a;
+  --color-champagne-soft: #cdb98f;
+
+  --color-background: var(--color-ivory);
+  --color-foreground: var(--color-charcoal);
+  --color-muted: var(--color-stone);
+  --color-accent: var(--color-sage);
+
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 2px;
+  --radius: 3px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  border-color: color-mix(in srgb, var(--color-charcoal) 12%, transparent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ivory);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+  font-feature-settings: "kern";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Editorial small caps label */
+.eyebrow {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-stone);
+}
+
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  transition: background-size 0.3s ease;
+}
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+::selection {
+  background: var(--color-champagne-soft);
+  color: var(--color-charcoal);
+}
+
+/* Thin scrollbar for filter panels */
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-charcoal) 20%, transparent);
+  border-radius: 3px;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease both;
+}
+
+/* ---------------------------------------------------------------------------
+   Editorial motion — restrained, opacity + small translate only.
+   Everything below is disabled under prefers-reduced-motion.
+--------------------------------------------------------------------------- */
+
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Scroll / load reveal — driven by the <Reveal> component adding .is-in */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.9s var(--ease-out-soft),
+    transform 0.9s var(--ease-out-soft);
+  will-change: opacity, transform;
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+.reveal-img {
+  clip-path: inset(0 0 6% 0);
+  transform: scale(1.04);
+  opacity: 0;
+  transition:
+    clip-path 1.2s var(--ease-out-soft),
+    transform 1.4s var(--ease-out-soft),
+    opacity 1s var(--ease-out-soft);
+}
+.reveal-img.is-in {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Hero: gentle fade-in, then an extremely slow ambient zoom */
+@keyframes hero-in {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+@keyframes hero-drift {
+  from { transform: scale(1.06); }
+  to { transform: scale(1.14); }
+}
+.hero-drift {
+  opacity: 1;
+  animation:
+    hero-in 1.6s var(--ease-out-soft) both,
+    hero-drift 26s ease-out 1.6s both;
+}
+
+/* Arrow nudge on hover for text CTAs */
+.cta-arrow {
+  display: inline-block;
+  transition: transform 0.35s var(--ease-out-soft);
+}
+.group:hover .cta-arrow,
+.cta-link:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Navbar links: calm colour transition, subtle active dot (no sliding underline) */
+.nav-link {
+  position: relative;
+  color: color-mix(in srgb, var(--color-charcoal) 72%, transparent);
+  transition: color 0.3s ease;
+}
+.nav-link:hover {
+  color: var(--color-charcoal);
+}
+.nav-link[data-active="true"] {
+  color: var(--color-charcoal);
+}
+.nav-link[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--color-champagne);
+  transform: translateX(-50%);
+}
+
+/* Homepage: navbar sits transparent over the hero, then fades to the
+   standard solid style on scroll (data-overlay toggled by NavbarClient). */
+.nav-fg {
+  transition:
+    color 0.35s ease,
+    opacity 0.35s ease;
+}
+header[data-overlay="true"] .nav-fg,
+header[data-overlay="true"] .nav-link {
+  /* Keeps type legible over any part of the hero image (and any brief
+     loading state before the hero paints). */
+  text-shadow: 0 1px 12px rgba(41, 40, 36, 0.4);
+}
+header[data-overlay="true"] .nav-fg {
+  color: color-mix(in srgb, var(--color-ivory) 82%, transparent);
+}
+header[data-overlay="true"] .nav-fg:hover {
+  color: var(--color-ivory);
+}
+header[data-overlay="true"] .nav-link {
+  color: color-mix(in srgb, var(--color-ivory) 78%, transparent);
+}
+header[data-overlay="true"] .nav-link > span {
+  color: currentColor;
+}
+header[data-overlay="true"] .nav-link:hover,
+header[data-overlay="true"] .nav-link[data-active="true"] {
+  color: var(--color-ivory);
+}
+header[data-overlay="true"] .nav-link[data-active="true"]::after {
+  background: var(--color-ivory);
+}
+
+/* Horizontal snap carousels */
+.snap-x-mandatory {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-start {
+  scroll-snap-align: start;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .hero-drift {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .reveal,
+  .reveal-img {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .cta-arrow { transition: none !important; }
 }

@@ -1,0 +1,39 @@
+# Render blueprint for Velora — Web Service + PostgreSQL
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: velora-db
+    databaseName: commerce
+    user: postgres
+    plan: free
+
+services:
+  - type: web
+    name: velora
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    preDeployCommand: npx prisma migrate deploy
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: velora-db
+          property: connectionString
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: NODE_VERSION
+        value: "22.11.0"

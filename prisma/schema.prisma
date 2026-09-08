@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PROCESSING
+  SHIPPED
+  DELIVERED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  phone            String?
+  name             String
+  passwordHash     String
+  role             Role      @default(CUSTOMER)
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  customerProfile CustomerProfile?
+  sellerProfile   SellerProfile?
+  addresses       Address[]
+  wishlist        Wishlist?
+  cart            Cart?
+  orders          Order[]
+  recentSearches  RecentSearch[]
+  recentlyViewed  RecentlyViewedProduct[]
+  reviews         Review[]
+}
+
+model RecentSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, query])
+  @@index([userId, updatedAt])
+}
+
+model RecentlyViewedProduct {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId, viewedAt])
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model SellerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName String
+  bio       String?
+  createdAt DateTime @default(now())
+
+  products Product[]
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName   String
+  phone      String
+  line1      String
+  city       String
+  state      String
+  postalCode String
+  country    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  orders Order[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  group    String // "Jewellery" or "Fashion"
+  imageUrl String?
+  products Product[]
+}
+
+model Product {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String
+  price          Int // in minor units (cents) — original / list price
+  discount       Int      @default(0) // percent 0-100
+  // Final selling price in minor units = round(price * (100 - discount) / 100).
+  // Persisted so listing filters / sorting / facets can use it directly.
+  effectivePrice Int      @default(0)
+  material       String?
+  sizes          String[] @default([])
+  colors         String[] @default([])
+  stock          Int      @default(0)
+  published      Boolean  @default(false)
+  featured       Boolean  @default(false)
+  trending       Boolean  @default(false)
+  bestSeller     Boolean  @default(false)
+  newArrival     Boolean  @default(false)
+  // Denormalised review aggregates, kept in sync when a review is written.
+  ratingAvg      Float    @default(0)
+  ratingCount    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  sellerId String
+  seller   SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  images        ProductImage[]
+  variants      ProductVariant[]
+  wishlistItems WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+
+  recentlyViewedBy RecentlyViewedProduct[]
+  reviews          Review[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([effectivePrice])
+  @@index([discount])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rating    Int // 1–5
+  title     String?
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One review per purchased line: a customer can review a product once per order.
+  @@unique([orderId, productId])
+  @@index([productId, createdAt])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String  @db.Text
+  isPrimary Boolean @default(false)
+  position  Int     @default(0)
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String?
+  color     String?
+  stock     Int     @default(0)
+}
+
+model Wishlist {
+  id     String         @id @default(cuid())
+  userId String         @unique
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+}
+
+model Cart {
+  id     String     @id @default(cuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  size      String?
+  color     String?
+  createdAt DateTime @default(now())
+
+  @@unique([cartId, productId, size, color])
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  addressId   String?
+  address     Address? @relation(fields: [addressId], references: [id])
+
+  // snapshot of shipping address
+  shipFullName String
+  shipPhone    String
+  shipLine1    String
+  shipCity     String
+  shipState    String
+  shipPostal   String
+  shipCountry  String
+
+  subtotal        Int
+  total           Int
+  status          OrderStatus   @default(PROCESSING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  stripeSessionId String?       @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items   OrderItem[]
+  reviews Review[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id          String      @id @default(cuid())
+  orderId     String
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product?    @relation(fields: [productId], references: [id])
+  sellerId    String
+  // snapshot
+  productName String
+  unitPrice   Int // price after discount, minor units
+  quantity    Int
+  size        String?
+  color       String?
+  imageUrl    String?
+  status      OrderStatus @default(PROCESSING)
+
+  @@index([orderId])
+  @@index([sellerId])
+}
