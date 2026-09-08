@@ -4,7 +4,6 @@
 databases:
   - name: velora-db
     databaseName: commerce
-    user: postgres
     plan: free
 
 services:
