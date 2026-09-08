@@ -4,7 +4,8 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
-import { Field, Input } from "@/components/ui/Field";
+import { Field } from "@/components/ui/Field";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 
 function ResetInner() {
@@ -66,8 +67,7 @@ function ResetInner() {
       ) : (
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <Field label="New password" hint="At least 8 characters">
-            <Input
-              type="password"
+            <PasswordInput
               required
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -75,8 +75,7 @@ function ResetInner() {
             />
           </Field>
           <Field label="Confirm new password">
-            <Input
-              type="password"
+            <PasswordInput
               required
               value={form.confirmPassword}
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}

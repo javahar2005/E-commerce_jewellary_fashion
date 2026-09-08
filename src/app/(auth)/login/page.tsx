@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
 import { Field, Input } from "@/components/ui/Field";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 
 function LoginForm() {
@@ -60,8 +61,7 @@ function LoginForm() {
           />
         </Field>
         <Field label="Password">
-          <Input
-            type="password"
+          <PasswordInput
             autoComplete="current-password"
             required
             value={form.password}

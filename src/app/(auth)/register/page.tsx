@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
 import { Field, Input } from "@/components/ui/Field";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -134,8 +135,7 @@ function RegisterForm({
           </Field>
         )}
         <Field label="Password" error={errors.password?.[0]} hint="At least 8 characters">
-          <Input
-            type="password"
+          <PasswordInput
             required
             value={form.password}
             onChange={set("password")}
@@ -143,8 +143,7 @@ function RegisterForm({
           />
         </Field>
         <Field label="Confirm password" error={errors.confirmPassword?.[0]}>
-          <Input
-            type="password"
+          <PasswordInput
             required
             value={form.confirmPassword}
             onChange={set("confirmPassword")}
