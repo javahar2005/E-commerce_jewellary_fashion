@@ -38,7 +38,18 @@ export async function sendEmail(opts: {
 
     if (!res.ok) {
       const body = await res.text();
-      console.error(`[email] Resend responded ${res.status}: ${body}`);
+      if (res.status === 403) {
+        // Resend rejects sends to addresses other than your own account email
+        // until you verify a domain at resend.com/domains and use a `from`
+        // address on it. The reset link is surfaced in the UI as a fallback.
+        console.warn(
+          `[email] Resend 403 — unverified sender / restricted recipient. ` +
+            `Verify a domain and set EMAIL_FROM to it, or unset RESEND_API_KEY ` +
+            `to use the in-app reset link. Response: ${body}`,
+        );
+      } else {
+        console.error(`[email] Resend responded ${res.status}: ${body}`);
+      }
       return { delivered: false };
     }
     return { delivered: true };
