@@ -12,8 +12,9 @@ services:
     name: velora
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
-    preDeployCommand: npx prisma migrate deploy
+    # Migrations run in the build step so this works on Render's free plan
+    # (preDeployCommand requires a paid instance type).
+    buildCommand: npm install && npx prisma migrate deploy && npm run build
     startCommand: npm run start
     healthCheckPath: /
     envVars:
