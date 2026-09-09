@@ -87,6 +87,12 @@ model SellerProfile {
   bio       String?
   createdAt DateTime @default(now())
 
+  // Mock payout setup (demo only — not connected to any real bank / provider).
+  payoutAccountName   String?
+  payoutAccountNumber String?
+  payoutIfsc          String?
+  payoutsEnabled      Boolean @default(false)
+
   products Product[]
 }
 

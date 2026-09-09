@@ -129,6 +129,19 @@ export const orderStatusSchema = z.object({
   status: z.enum(["PROCESSING", "SHIPPED", "DELIVERED"]),
 });
 
+export const payoutSchema = z.object({
+  accountName: z.string().min(2, "Enter the account holder name").max(120),
+  accountNumber: z
+    .string()
+    .trim()
+    .regex(/^\d{9,18}$/, "Account number must be 9–18 digits"),
+  ifsc: z
+    .string()
+    .trim()
+    .transform((v) => v.toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid IFSC code")),
+});
+
 export const reviewSchema = z.object({
   orderId: z.string().min(1, "Select the order you're reviewing"),
   rating: z.coerce.number().int().min(1, "Choose a rating").max(5),
